@@ -39,7 +39,8 @@ function activate(context) {
 					let lineParts = textLine.text.split(" ")
 					if (lineParts[1] != "") {
 						let functionNameEndIndex = lineParts[1].indexOf("(")
-						functionNames.push(lineParts[1].substring(0, functionNameEndIndex) + "Test(t *testing.T){}")
+						let firstCharacterUppercase = lineParts[1].substring(0, 1).toUpperCase()
+						functionNames.push("Test" + firstCharacterUppercase + lineParts[1].substring(1, functionNameEndIndex) + "(t *testing.T){}")
 					}
 				}
 			}
