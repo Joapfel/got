@@ -38,7 +38,8 @@ function activate(context) {
 				if (textLine.text.includes("func")) {
 					let lineParts = textLine.text.split(" ")
 					if (lineParts[1] != "") {
-						functionNames.push(lineParts[1].substring(0, lineParts.length) + "Test(t *testing.T){}")
+						let functionNameEndIndex = lineParts[1].indexOf("(")
+						functionNames.push(lineParts[1].substring(0, functionNameEndIndex) + "Test(t *testing.T){}")
 					}
 				}
 			}
