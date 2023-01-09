@@ -39,8 +39,7 @@ function activate(context) {
 					let lineParts = textLine.text.split(" ")
 					if (lineParts[1] != "") {
 						let functionNameEndIndex = lineParts[1].indexOf("(")
-						let firstCharacterUppercase = lineParts[1].substring(0, 1).toUpperCase()
-						functionNames.push("Test" + firstCharacterUppercase + lineParts[1].substring(1, functionNameEndIndex) + "(t *testing.T){}")
+						functionNames.push(lineParts[1].substring(0, functionNameEndIndex))
 					}
 				}
 			}
@@ -58,7 +57,36 @@ function activate(context) {
 		fileContent += "\n\n"
 
 		functionNames.forEach(function(functionName){
-			fileContent += "func " + functionName
+			console.log(functionName)
+			var firstCharacterUppercase = functionName.substring(0, 1).toUpperCase()
+			var firstCharacterLowercase = functionName.substring(0, 1).toLowerCase()
+			var functionNameWithoutFirstCharacter = functionName.substring(1)
+			fileContent += "func Test" + firstCharacterUppercase + functionNameWithoutFirstCharacter + "(t *testing.T){"
+			fileContent += "\n\n"
+
+			// TODO: make this optional in a separate command
+			fileContent += "\ttype " + firstCharacterLowercase + functionNameWithoutFirstCharacter + "Tests struct {"
+			fileContent += "\n\n"	
+			fileContent += "\t}" // close type definition for table driven tests
+			fileContent += "\n\n"
+
+			// define table of tests
+			fileContent += "\ttests := []" + firstCharacterLowercase + functionNameWithoutFirstCharacter + "Tests {"
+			fileContent += "\n"
+			fileContent += "\t\t{},"
+			fileContent += "\n"
+			fileContent += "\t}"
+			fileContent += "\n\n"
+
+			// loop over tests 
+			fileContent += "\tfor _, test := range tests {"
+			fileContent += "\n"
+			fileContent += "\t\tt.Log(test)"
+			fileContent += "\n\t}" 
+			fileContent += "\n\n"	
+
+			// close function definition
+			fileContent += "}"
 			fileContent += "\n\n"
 		});
 
