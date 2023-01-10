@@ -23,6 +23,21 @@ function createFunctionFromFunctionNames(functionName){
 	return [functionDeclaration, "}"]
 }
 
+async function isValidFile(){
+	const fileUri = vscode.window.activeTextEditor.document.uri
+	if (!fileUri.fsPath.endsWith(".go")){
+		return false
+	}
+	var rval = true
+	await vscode.workspace.openTextDocument(fileUri.fsPath).then((document) => {
+		let firstLine = document.lineAt(0)
+		if (!firstLine.text.includes("package")) {
+			rval = false
+		}
+	});
+	return rval
+}
+
 async function getPackageNameOfCurrentFile(){
 	var packageName = ""
 
@@ -83,6 +98,12 @@ function activate(context) {
 	let createUnitTests = vscode.commands.registerCommand('got.createUnitTests', async function () {
 		// The code you place here will be executed every time your command is executed
 
+		var isValid = await isValidFile()
+		if (!isValid) {
+			vscode.window.showInformationMessage("not a valid .go file");
+			return
+		}
+
 		var packageName = await getPackageNameOfCurrentFile()
 		var functionNames = await getFunctionNamesOfCurrentFile()
 		var targetFilename = getTargetFileName()
@@ -115,6 +136,12 @@ function activate(context) {
 	// The commandId parameter must match the command field in package.json
 	let createUnitTestsWithTable = vscode.commands.registerCommand('got.createUnitTestsWithTable', async function () {
 		// The code you place here will be executed every time your command is executed
+
+		var isValid = await isValidFile()
+		if (!isValid) {
+			vscode.window.showInformationMessage("not a valid .go file");
+			return
+		}
 
 		var packageName = await getPackageNameOfCurrentFile()
 		var functionNames = await getFunctionNamesOfCurrentFile()
