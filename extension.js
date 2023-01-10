@@ -44,11 +44,17 @@ async function getFunctionNamesOfCurrentFile(){
 	await vscode.workspace.openTextDocument(fileUri.fsPath).then((document) => {
 		for (let num = 0; num < document.lineCount; num++) {
 			let textLine = document.lineAt(num)
+
 			if (textLine.text.includes("func")) {
 				let lineParts = textLine.text.split(" ")
-				if (lineParts[1] != "") {
+
+				if (lineParts[1] != "" && lineParts[1].charAt(0) != "(") {
 					let functionNameEndIndex = lineParts[1].indexOf("(")
 					functionNames.push(lineParts[1].substring(0, functionNameEndIndex))
+
+				} else if (lineParts[1].charAt(0) == "(") {
+					let functionNameEndIndex = lineParts[3].indexOf("(")
+					functionNames.push(lineParts[3].substring(0, functionNameEndIndex))	
 				}
 			}
 		}
