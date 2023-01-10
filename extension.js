@@ -2,9 +2,65 @@
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
 const fs = require('fs');
+const { parseJsonConfigFileContent } = require('typescript');
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
+function getFirstCharacterUpperAndLower(functionName) {
+	var firstCharacterUppercase = functionName.substring(0, 1).toUpperCase()
+	var firstCharacterLowercase = functionName.substring(0, 1).toLowerCase()
+	return [firstCharacterUppercase, firstCharacterLowercase]
+}
+
+function getFunctionNameWithoutFirstCharacter(functionName){
+	return functionName.substring(1)
+}
+
+function createFunctionFromFunctionNames(functionName){
+	var firstCharacterUppercase = getFirstCharacterUpperAndLower(functionName)[0]
+	var functionNameWithoutFirstCharacter = getFunctionNameWithoutFirstCharacter(functionName)
+	var functionDeclaration = "func Test" + firstCharacterUppercase + functionNameWithoutFirstCharacter + "(t *testing.T){"
+	return [functionDeclaration, "}"]
+}
+
+async function getPackageNameOfCurrentFile(){
+	var packageName = ""
+
+	const fileUri = vscode.window.activeTextEditor.document.uri
+	await vscode.workspace.openTextDocument(fileUri.fsPath).then((document) => {
+		let firstLine = document.lineAt(0)
+		if (firstLine.text.includes("package")) {
+			packageName = firstLine.text
+		}
+	});
+
+	return packageName
+}
+
+async function getFunctionNamesOfCurrentFile(){
+	var functionNames = []
+
+	const fileUri = vscode.window.activeTextEditor.document.uri
+	await vscode.workspace.openTextDocument(fileUri.fsPath).then((document) => {
+		for (let num = 0; num < document.lineCount; num++) {
+			let textLine = document.lineAt(num)
+			if (textLine.text.includes("func")) {
+				let lineParts = textLine.text.split(" ")
+				if (lineParts[1] != "") {
+					let functionNameEndIndex = lineParts[1].indexOf("(")
+					functionNames.push(lineParts[1].substring(0, functionNameEndIndex))
+				}
+			}
+		}
+	});
+
+	return functionNames
+}
+
+function getTargetFileName(){
+	const fileUri = vscode.window.activeTextEditor.document.uri
+	return fileUri.fsPath.substring(0, fileUri.fsPath.length-3) + "_test.go"
+}
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -18,34 +74,46 @@ function activate(context) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('got.createUnitTests', async function () {
+	let createUnitTests = vscode.commands.registerCommand('got.createUnitTests', async function () {
 		// The code you place here will be executed every time your command is executed
 
-		var functionNames = []
-		var packageName = ""
+		var packageName = await getPackageNameOfCurrentFile()
+		var functionNames = await getFunctionNamesOfCurrentFile()
+		var targetFilename = getTargetFileName()
 
-		const fileUri = vscode.window.activeTextEditor.document.uri
+		vscode.window.showInformationMessage("creating " + targetFilename + "file");
 
-		await vscode.workspace.openTextDocument(fileUri.fsPath).then((document) => {
-			
-			let firstLine = document.lineAt(0)
-			if (firstLine.text.includes("package")) {
-				packageName = firstLine.text
-			}
+		var fileContent = ""
+		fileContent += packageName
+		fileContent += "\n\n"
 
-			for (let num = 0; num < document.lineCount; num++) {
-				let textLine = document.lineAt(num)
-				if (textLine.text.includes("func")) {
-					let lineParts = textLine.text.split(" ")
-					if (lineParts[1] != "") {
-						let functionNameEndIndex = lineParts[1].indexOf("(")
-						functionNames.push(lineParts[1].substring(0, functionNameEndIndex))
-					}
-				}
-			}
+		const imports = "import (\n\t\"testing\"\n)"
+		fileContent += imports
+		fileContent += "\n\n"
+
+		functionNames.forEach(function(functionName){
+			var [functionDefinition, functionClosing] = createFunctionFromFunctionNames(functionName)
+
+			fileContent += functionDefinition
+			fileContent += "\n\n"	
+			fileContent += functionClosing
+			fileContent += "\n\n"
 		});
 
-		var targetFilename = fileUri.fsPath.substring(0, fileUri.fsPath.length-3) + "_test.go"
+		fs.writeFile(targetFilename, fileContent, function(){
+		});
+	});
+
+	// The command has been defined in the package.json file^
+	// Now provide the implementation of the command with  registerCommand
+	// The commandId parameter must match the command field in package.json
+	let createUnitTestsWithTable = vscode.commands.registerCommand('got.createUnitTestsWithTable', async function () {
+		// The code you place here will be executed every time your command is executed
+
+		var packageName = await getPackageNameOfCurrentFile()
+		var functionNames = await getFunctionNamesOfCurrentFile()
+		var targetFilename = getTargetFileName()
+		
 		vscode.window.showInformationMessage("creating " + targetFilename + "file");
 
 		var fileContent = ""
@@ -58,19 +126,20 @@ function activate(context) {
 
 		functionNames.forEach(function(functionName){
 			console.log(functionName)
-			var firstCharacterUppercase = functionName.substring(0, 1).toUpperCase()
-			var firstCharacterLowercase = functionName.substring(0, 1).toLowerCase()
-			var functionNameWithoutFirstCharacter = functionName.substring(1)
-			fileContent += "func Test" + firstCharacterUppercase + functionNameWithoutFirstCharacter + "(t *testing.T){"
+			var firstCharacterLowercase = getFirstCharacterUpperAndLower(functionName)[1]
+
+			var functionNameWithoutFirstCharacter = getFunctionNameWithoutFirstCharacter(functionName)
+			var [functionDefinition, functionClosing] = createFunctionFromFunctionNames(functionName)
+
+			fileContent += functionDefinition
 			fileContent += "\n\n"
 
-			// TODO: make this optional in a separate command
+			// add table driven tests
 			fileContent += "\ttype " + firstCharacterLowercase + functionNameWithoutFirstCharacter + "Tests struct {"
 			fileContent += "\n\n"	
-			fileContent += "\t}" // close type definition for table driven tests
+			fileContent += "\t}"
 			fileContent += "\n\n"
 
-			// define table of tests
 			fileContent += "\ttests := []" + firstCharacterLowercase + functionNameWithoutFirstCharacter + "Tests {"
 			fileContent += "\n"
 			fileContent += "\t\t{},"
@@ -85,8 +154,7 @@ function activate(context) {
 			fileContent += "\n\t}" 
 			fileContent += "\n\n"	
 
-			// close function definition
-			fileContent += "}"
+			fileContent += functionClosing
 			fileContent += "\n\n"
 		});
 
@@ -94,7 +162,8 @@ function activate(context) {
 		});
 	});
 
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(createUnitTests);
+	context.subscriptions.push(createUnitTestsWithTable);
 }
 
 // This method is called when your extension is deactivated

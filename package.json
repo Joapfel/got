@@ -14,10 +14,16 @@
   ],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "got.createUnitTests",
-      "title": "got: create unit tests"
-    }]
+    "commands": [
+      {
+        "command": "got.createUnitTests",
+        "title": "got: create unit tests (simple)"
+      },
+      {
+        "command": "got.createUnitTestsWithTable",
+        "title": "got: create unit tests (table driven)"
+      }
+  ]
   },
   "scripts": {
     "lint": "eslint .",
