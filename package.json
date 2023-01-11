@@ -12,7 +12,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:got.helloWorld"
+    "onCommand:got.createUnitTests",
+    "onCommand:got.createUnitTestsWithTable"
   ],
   "main": "./extension.js",
   "contributes": {
