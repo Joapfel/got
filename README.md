@@ -1,6 +1,8 @@
-# Got, a simple tool for golang unit tests
+# Got, a simple tool for generating golang unit tests
 
-Got creates a `_test.go` file with boilerplate code.
+Got creates a `_test.go` for the currently open `.go` file.
+This new file will include unit test stubs following the convention `func Test<OriginalFunctionOrMethodName>(t *testing.T){}`.
+Optionally, it generates the data structure for table driven tests following the convention `type <originalFunctionOrMethodName>Tests struct {}`.
 
 
 ## Commands
