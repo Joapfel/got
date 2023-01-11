@@ -1,7 +1,7 @@
 {
   "name": "got",
   "displayName": "got",
-  "description": "Golang Unit Test Utility",
+  "description": "Golang Unit Test Generation",
   "publisher": "Joapfel",
   "version": "0.0.1",
   "engines": {
