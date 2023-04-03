@@ -8,3 +8,4 @@ Optionally, it generates the data structure for table driven tests following the
 ## Commands
 `got: create unit tests (simple)` creates test functions<br>
 `got: create unit tests (table driven)` creates test functions and the skeleton for table driven tests
+`got: create unit tests (table driven) + http mock server` creates test functions and the skeleton for table driven tests + the skeleton for a http mock server
