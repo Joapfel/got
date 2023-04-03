@@ -3,7 +3,7 @@
   "displayName": "got",
   "description": "Golang Unit Test Generation",
   "publisher": "Joapfel",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -13,7 +13,8 @@
   ],
   "activationEvents": [
     "onCommand:got.createUnitTests",
-    "onCommand:got.createUnitTestsWithTable"
+    "onCommand:got.createUnitTestsWithTable",
+    "onCommand:got.createUnitTestsWithMockServer"
   ],
   "main": "./extension.js",
   "contributes": {
@@ -25,6 +26,10 @@
       {
         "command": "got.createUnitTestsWithTable",
         "title": "got: create unit tests (table driven)"
+      },
+      {
+        "command": "got.createUnitTestsWithMockServer",
+        "title": "got: create unit tests (table driven) + http mock server"
       }
   ]
   },
