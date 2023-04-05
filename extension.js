@@ -72,6 +72,7 @@ async function getFunctionNamesOfCurrentFile(){
 				} else if (lineParts[1].charAt(0) == "(") {
 					let typeNameEndIndex = lineParts[2].indexOf(")")
 					let typeName = lineParts[2].substring(0, typeNameEndIndex)
+					typeName = typeName.replace("*", "")
 
 					let functionNameEndIndex = lineParts[3].indexOf("(")
 					let functionName = lineParts[3].substring(0, functionNameEndIndex)
